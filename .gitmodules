@@ -1,0 +1,9 @@
+[submodule "fs/jni/external/fuse"]
+	path = fs/jni/external/fuse
+	url = https://github.com/CyanogenMod/android_external_fuse.git
+[submodule "jni/fusecompress/fusecompress"]
+	path = fs/jni/fusecompress
+	url = https://github.com/tex/fusecompress.git
+[submodule "libmagic/file"]
+	path = libmagic-android/file
+	url = https://github.com/file/file.git
