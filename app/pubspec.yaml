@@ -1,0 +1,22 @@
+name: zdata
+description: "zdata compresses your Android apps' data so it'll take less space"
+
+dependencies:
+  android_app_info: any
+  path_provider: any
+  path: any
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - bin-arm/fusecompress
+    - bin-arm/fusermount
+    - script/mount.sh
+    - script/umount.sh

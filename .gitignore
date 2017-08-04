@@ -2,3 +2,9 @@ fs/obj/
 fs/libs/
 boost-android/boost/
 toolchain/toolchain/
+app/.packages
+app/.pub/
+app/build/
+app/packages
+app/pubspec.lock
+app/.flutter-plugins
