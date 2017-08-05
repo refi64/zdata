@@ -37,13 +37,14 @@ class Root extends StatefulWidget {
 }
 
 
-enum Tool { fusecompress, fusermount, mountsh, umountsh }
+enum Tool { fusecompress, fusermount, mountsh, mountallsh, umountsh }
 
 
 const Map<Tool, String> TOOL_NAMES = const {
   Tool.fusecompress: 'fusecompress',
   Tool.fusermount: 'fusermount',
   Tool.mountsh: 'mount.sh',
+  Tool.mountallsh: 'mountall.sh',
   Tool.umountsh: 'umount.sh',
 };
 
@@ -64,6 +65,8 @@ class _RootState extends State<Root> {
   }
 
   Future loadAll() async {
+    // To get root access quickly
+    await Process.run('su', ['-c', 'true']);
     await loadTools();
     loadAppsAndMounts();
   }
@@ -79,8 +82,6 @@ class _RootState extends State<Root> {
 
     if (arch == 'armv7l') {
       bindir = 'bin-arm';
-    } else if (arch == 'armv8') {
-      bindir = 'bin-arm64';
     } else {
       // asume ARM for now
       bindir = 'bin-arm';
@@ -117,7 +118,8 @@ class _RootState extends State<Root> {
 
   Future loadApps() async {
     var apps = (await AndroidAppInfo.getInstalledApplications())
-                .where((app) => app.hasLaunchIntent).toList()
+                .where((app) => app.hasLaunchIntent &&
+                                app.packageName != 'com.refi64.zdata.app').toList()
                 ..sort((a, b) => shownAppName(a).toLowerCase().compareTo(
                                   shownAppName(b).toLowerCase()));
 

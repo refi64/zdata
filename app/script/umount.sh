@@ -6,8 +6,8 @@ set -ex
 cd /data/data/com.refi64.zdata.app/app_flutter
 
 chmod +x fusermount
-./fusermount -u "/data/data/$1"
+./fusermount -u "/data/data/$1" ||:
 pm clear "$1"
 rm -rf "storage/$1"
 
-svc power reboot
+svc power reboot ||:

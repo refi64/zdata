@@ -6,6 +6,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application android:name="io.flutter.app.FlutterApplication" android:label="zdata" android:icon="@mipmap/ic_launcher">
         <activity android:name=".MainActivity"
@@ -19,5 +20,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <receiver android:name=".BootReceiver">
+          <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED" android:priority="999"/>
+          </intent-filter>
+        </receiver>
     </application>
 </manifest>

@@ -19,4 +19,5 @@ flutter:
     - bin-arm/fusecompress
     - bin-arm/fusermount
     - script/mount.sh
+    - script/mountall.sh
     - script/umount.sh
