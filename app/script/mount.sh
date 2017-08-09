@@ -10,7 +10,7 @@ pm clear "$1"
 rm -rf "storage/$1"
 mkdir -p "storage/$1"
 chmod +x fusecompress
-./fusecompress -o allow_other,nonempty,fc_c:zlib "storage/$1" "/data/data/$1"
+./fusecompress -o allow_other,nonempty,fc_c:lzma "storage/$1" "/data/data/$1"
 pm clear "$1"
 chown -R "$user:$user" "/data/data/$1"
 
