@@ -57,16 +57,37 @@ class _RootState extends State<Root> {
   Directory _storagedir;
   Map<Tool, File> _tools;
   List<bool> _enabled;
+  bool _sufail = false;
 
   @override
   initState() {
     super.initState();
+    requestRootAndLoadAll();
+  }
+
+  Future requestRootAndLoadAll() async {
+    // To get root access quickly
+    var proc, sufail = false;
+
+    try {
+      proc = await Process.run('su', ['-c', 'true']);
+    } catch (e) {
+      sufail = true;
+    }
+
+    if (!_sufail) {
+      sufail = proc.exitCode != 0;
+    }
+
+    setState(() {
+      _sufail = sufail;
+    });
+
     loadAll();
   }
 
   Future loadAll() async {
     // To get root access quickly
-    await Process.run('su', ['-c', 'true']);
     await loadTools();
     loadAppsAndMounts();
   }
@@ -189,6 +210,7 @@ class _RootState extends State<Root> {
           new FlatButton(
             child: new Text('Go ahead!!'),
             onPressed: () {
+              Navigator.of(context).pop();
               Navigator.of(context).push(new MaterialPageRoute<Null>(
                 builder: (BuildContext context) => runAction(action, app),
               ));
@@ -203,15 +225,18 @@ class _RootState extends State<Root> {
   Widget build(BuildContext context) {
     var body;
 
-    if (_apps != null) {
+    if (_sufail) {
+      body = new Center(
+        child: new Text('Failed to get root access!'),
+      );
+    } else if (_apps != null) {
       body = new AppSelectorWidget(
         apps: _apps,
         enabled: _enabled,
         onTap: onTap,
       );
     } else {
-      var message = _tools == null ? 'Loading tools...'
-                                   : 'Loading application list...';
+      var message = _tools == null ? 'Loading tools...' : 'Loading application list...';
       body = new Center(
         child: new Column(
           children: <Widget>[
