@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 
 import 'package:android_app_info/android_app_info.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:path/path.dart' as path;
 
 import 'dart:async';
@@ -225,6 +226,12 @@ class _RootState extends State<Root> {
     );
   }
 
+  void url(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var body;
@@ -254,6 +261,28 @@ class _RootState extends State<Root> {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('zdata'),
+      ),
+      drawer: new Drawer(
+        child: new ListView(
+          children: <Widget>[
+            new DrawerHeader(
+              decoration: new BoxDecoration(color: Colors.blue),
+              child: new Text(
+                'zdata',
+                style: new TextStyle(color: Colors.white),
+              ),
+            ),
+            new ListTile(
+              leading: const Icon(null),
+              title: const Text('Website'),
+              onTap: () => url('https://refi64.com/proj/zdata.html'),
+            ),
+            new AboutListTile(
+              applicationName: 'zdata',
+              applicationVersion: '0.1',
+            ),
+          ],
+        ),
       ),
       body: body,
     );

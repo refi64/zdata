@@ -8,6 +8,7 @@ Building
 ********
 
 ::
+
   $ toolchain/make_toolchain.sh
   $ libmagic-android/configure.sh
   $ libmagic-android/build.sh

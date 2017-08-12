@@ -4,6 +4,7 @@ description: "zdata compresses your Android apps' data so it'll take less space"
 dependencies:
   android_app_info: any
   path_provider: any
+  url_launcher: any
   path: any
   flutter:
     sdk: flutter
