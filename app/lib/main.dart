@@ -106,11 +106,23 @@ class _RootState extends State<Root> {
     var arch = (await Process.run('uname', ['-m'])).stdout.trim();
     var bindir;
 
-    if (arch == 'armv7l') {
+    switch (arch) {
+    case 'armv7l':
+    case 'armv8':
+    case 'arm64':
+    case 'aarch64':
+      debugPrint('using bin-arm for ${arch}');
       bindir = 'bin-arm';
-    } else {
-      // asume ARM for now
+      break;
+    case 'i386':
+    case 'i686':
+      debugPrint('using bin-x86 for ${arch}');
+      bindir = 'bin-x86';
+      break;
+    default:
+      debugPrint('using bin-arm for unknown arch ${arch}');
       bindir = 'bin-arm';
+      break;
     }
 
     var datadir = await getApplicationDocumentsDirectory();

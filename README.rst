@@ -9,11 +9,4 @@ Building
 
 ::
 
-  $ toolchain/make_toolchain.sh
-  $ libmagic-android/configure.sh
-  $ libmagic-android/build.sh
-  $ boost-android/download.sh
-  $ boost-android/bootstrap.sh
-  $ boost-android/build.sh  # it's OK if you get some errors here
-  $ fs/build.sh
-  $ app/build.sh
+  $ python36 build.py all

@@ -1,9 +1,9 @@
 # (flags and sources taken from fusecompress/src/Makefile.am)
 
 LOCAL_PATH := $(call my-dir)
-BOOST_ANDROID := $(LOCAL_PATH)/../../boost-android/boost
-LIBMAGIC_ANDROID := $(LOCAL_PATH)/../../libmagic-android/file/src
-LIBLZMA_ANDROID := $(LOCAL_PATH)/../../liblzma-android/xz/src/liblzma
+BOOST_ANDROID_ROOT := $(LOCAL_PATH)/../../boost-android/boost
+BOOST_ANDROID_LIBS := $(LOCAL_PATH)/../../boost-android/boost/$(ARCH)/stage/lib
+LIBMAGIC_ANDROID := $(LOCAL_PATH)/../../libmagic-android/$(ARCH)/src
 
 common_sources := \
 	boost/iostreams/filter/lzma.cpp \
@@ -27,9 +27,8 @@ common_sources := $(addprefix fusecompress/src/,$(common_sources))
 common_c_includes := \
 	$(LOCAL_PATH)/external/fuse/include \
 	$(LOCAL_PATH)/external/lzma/C \
-	$(BOOST_ANDROID) \
+	$(BOOST_ANDROID_ROOT) \
 	$(LIBMAGIC_ANDROID) \
-	$(LIBLZMA_ANDROID)/api \
 	fusecompress/src
 
 common_cppflags := \
@@ -57,15 +56,13 @@ LOCAL_C_INCLUDES := $(common_c_includes)
 LOCAL_CPPFLAGS := $(common_cppflags)
 LOCAL_STATIC_LIBRARIES := libfuse_static
 LOCAL_LDLIBS := \
-	-L$(BOOST_ANDROID)/stage/lib \
-	-L$(LIBMAGIC_ANDROID)/.libs \
-	-L$(LIBLZMA_ANDROID)/.libs \
+	-L$(BOOST_ANDROID_LIBS) \
+	-L$(LIBMAGIC_ANDROID) \
 	-lboost_serialization \
 	-lboost_iostreams \
 	-lboost_program_options \
 	-lboost_filesystem \
 	-lboost_system \
 	-lmagic \
-	-llzma \
 	-lz
 include $(BUILD_EXECUTABLE)

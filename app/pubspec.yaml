@@ -19,6 +19,8 @@ flutter:
   assets:
     - bin-arm/fusecompress
     - bin-arm/fusermount
+    - bin-x86/fusecompress
+    - bin-x86/fusermount
     - script/mount.sh
     - script/mountall.sh
     - script/umount.sh
