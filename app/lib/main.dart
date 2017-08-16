@@ -183,7 +183,7 @@ class _RootState extends State<Root> {
       break;
     }
 
-    var proc = Process.run('su', ['-c', 'sh', _tools[tool].path, app.packageName]);
+    var proc = Process.run('su', ['-c', 'sh ${_tools[tool].path} ${app.packageName}']);
     return new ActionPage(proc: proc, action: action, app: app);
   }
 
