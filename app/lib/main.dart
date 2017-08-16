@@ -291,7 +291,7 @@ class _RootState extends State<Root> {
             ),
             new AboutListTile(
               applicationName: 'zdata',
-              applicationVersion: '0.1.1',
+              applicationVersion: '0.1.2',
             ),
           ],
         ),
