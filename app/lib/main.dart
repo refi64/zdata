@@ -42,12 +42,13 @@ class Root extends StatefulWidget {
 }
 
 
-enum Tool { fusecompress, fusermount, mountsh, mountallsh, umountsh }
+enum Tool { fusecompress, fusermount, getowner, mountsh, mountallsh, umountsh }
 
 
 const Map<Tool, String> TOOL_NAMES = const {
   Tool.fusecompress: 'fusecompress',
   Tool.fusermount: 'fusermount',
+  Tool.getowner: 'getowner',
   Tool.mountsh: 'mount.sh',
   Tool.mountallsh: 'mountall.sh',
   Tool.umountsh: 'umount.sh',
@@ -291,7 +292,7 @@ class _RootState extends State<Root> {
             ),
             new AboutListTile(
               applicationName: 'zdata',
-              applicationVersion: '0.1.2',
+              applicationVersion: '0.1.3',
             ),
           ],
         ),

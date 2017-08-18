@@ -182,6 +182,12 @@ def app(release=False):
     run(['flutter', 'build', 'apk', '--release' if release else '--debug'], cwd='app')
 
 
+@task('app:install')
+def app_install(release=False):
+    run(['adb', 'install', '-r',
+         f'app/build/app/outputs/apk/app-{"release" if release else "debug"}.apk'])
+
+
 @task('app:run')
 def app_run(release=False):
     run(['flutter', 'run', '--release' if release else '--debug'], cwd='app')
