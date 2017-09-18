@@ -21,6 +21,8 @@ void main() {
 
 String shownAppName(AndroidAppInfo app) => app.label ?? app.name ?? app.packageName;
 
+Image appIcon(AndroidAppInfo app) => new Image.memory(app.icon ?? app.defaultIcon);
+
 
 class Zdata extends StatelessWidget {
   // This widget is the root of your application.
@@ -76,12 +78,14 @@ class _RootState extends State<Root> {
     var proc, sufail = false;
 
     try {
-      proc = await Process.run('su', ['-c', 'true']);
+      // proc = await Process.run('su', ['-c', 'true']);
+      proc = await Process.run('/system/bin/sh', ['-c', 'su', '-c', 'true']);
     } catch (e) {
+      debugPrint("error: $e");
       sufail = true;
     }
 
-    if (!_sufail) {
+    if (!sufail) {
       sufail = proc.exitCode != 0;
     }
 
@@ -184,61 +188,6 @@ class _RootState extends State<Root> {
     });
   }
 
-  Widget runAction(Action action, AndroidAppInfo app) {
-    Tool tool;
-
-    switch (action) {
-    case Action.enable:
-      tool = Tool.mountsh;
-      break;
-    case Action.disable:
-      tool = Tool.umountsh;
-      break;
-    }
-
-    var proc = Process.run('su', ['-c', 'sh ${_tools[tool].path} ${app.packageName}']);
-    return new ActionPage(proc: proc, action: action, app: app);
-  }
-
-  void onTap(BuildContext context, AndroidAppInfo app, bool isenabled) {
-    var message;
-    Action action;
-
-    if (isenabled) {
-      message = 'Disable zdata for this app? (The device will be restarted afterwards.)';
-      action = Action.disable;
-    } else {
-      message = 'Enable zdata for this app?';
-      action = Action.enable;
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      child: new AlertDialog(
-        title: new Text('Are you sure?'),
-        content: new Text("${message} THIS WILL CLEAR ALL THE APP'S DATA!!!!!!"),
-        actions: <Widget>[
-          new FlatButton(
-            child: new Text('Nevermind...'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          new FlatButton(
-            child: new Text('Go ahead!!'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(new MaterialPageRoute<Null>(
-                builder: (BuildContext context) => runAction(action, app),
-              ));
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   void url(String url) async {
     if (await canLaunch(url)) {
       await launch(url);
@@ -257,7 +206,12 @@ class _RootState extends State<Root> {
       body = new AppSelectorWidget(
         apps: _apps,
         enabled: _enabled,
-        onTap: onTap,
+        onTap: (BuildContext context, AndroidAppInfo app, bool isenabled) {
+          Navigator.of(context).push(new MaterialPageRoute<Null>(
+            builder: (BuildContext context) =>
+              new AppInfoPage(app: app, enabled: isenabled, tools: _tools),
+          ));
+        },
       );
     } else {
       var message = _tools == null ? 'Loading tools...' : 'Loading application list...';
@@ -298,6 +252,113 @@ class _RootState extends State<Root> {
         ),
       ),
       body: body,
+    );
+  }
+}
+
+
+class AppInfoPage extends StatelessWidget {
+  final AndroidAppInfo app;
+  final bool enabled;
+  final Map<Tool, File> tools;
+
+  AppInfoPage({Key key, this.app, this.enabled, this.tools}): super(key: key);
+
+  Widget runAction(Action action) {
+    Tool tool;
+
+    switch (action) {
+    case Action.enable:
+      tool = Tool.mountsh;
+      break;
+    case Action.disable:
+      tool = Tool.umountsh;
+      break;
+    }
+
+    var proc = Process.run('/system/bin/sh',
+                           ['-c', 'su -c "sh ${tools[tool].path} ${app.packageName}"']);
+    return new ActionPage(proc: proc, action: action, app: app);
+  }
+
+  void onTap(BuildContext context) {
+    var message;
+    Action action;
+
+    if (enabled) {
+      message = 'Disable zdata for this app? (The device will be restarted afterwards.)';
+      action = Action.disable;
+    } else {
+      message = 'Enable zdata for this app?';
+      action = Action.enable;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      child: new AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text("${message} THIS WILL CLEAR ALL THE APP'S DATA!!!!!!"),
+        actions: <Widget>[
+          new FlatButton(
+            child: new Text('NO'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          new FlatButton(
+            child: new Text('YES'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(new MaterialPageRoute<Null>(
+                builder: (BuildContext context) => runAction(action),
+              ));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('zdata: ${shownAppName(app)}'),
+      ),
+      body: new Column(
+        children: [
+          new Row(
+            children: [
+              new Padding(
+                padding: new EdgeInsets.only(left: 10.0, right: 5.0),
+                child: appIcon(app),
+              ),
+              new Expanded(
+                child: new Padding(
+                  padding: new EdgeInsets.only(right: 10.0),
+                  child: new Column(
+                    children: [
+                      new Text(
+                        shownAppName(app),
+                        textScaleFactor: 2.0,
+                      ),
+                      new Text(
+                        app.packageName,
+                        textAlign: TextAlign.center,
+                      ),
+                    ]
+                  ),
+                )
+              ),
+            ],
+          ),
+          new RaisedButton(
+            child: new Text(enabled ? 'DISABLE' : 'ENABLE'),
+            onPressed: () => onTap(context),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -380,7 +441,7 @@ class AppSelectorWidget extends StatelessWidget {
         var isenabled = enabled[index];
 
         return new ListTile(
-          leading: new Image.memory(app.icon ?? app.defaultIcon),
+          leading: appIcon(app),
           title: new Text(shownAppName(app)),
           subtitle: new Text(app.dataDir),
           trailing: new Text(isenabled ? 'ENABLED' : 'DISABLED'),
