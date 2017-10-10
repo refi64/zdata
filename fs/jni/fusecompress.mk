@@ -34,6 +34,7 @@ common_c_includes := \
 common_cppflags := \
 	-DASSERT_H \
 	-D"assert(expr)=((expr)?(void)0:abort())" \
+	-D_LIBCPP_HAS_NO_OFF_T_FUNCTIONS \
 	-D_FILE_OFFSET_BITS=64 \
 	-DFUSE_USE_VERSION=26 \
 	-D_GNU_SOURCE \
@@ -52,7 +53,6 @@ LOCAL_SRC_FILES := \
 	$(common_sources) \
 	fusecompress/src/main.cpp
 LOCAL_C_INCLUDES := $(common_c_includes)
-# The fgetpos and fsetpos defines are to work around some odd libc++ compile errors
 LOCAL_CPPFLAGS := $(common_cppflags)
 LOCAL_STATIC_LIBRARIES := libfuse_static
 LOCAL_LDLIBS := \
