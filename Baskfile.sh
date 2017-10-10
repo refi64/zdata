@@ -38,8 +38,38 @@ set_current_abi() {
 }
 
 
+task_help() {
+  echo '[:arch] can be either :arm or :x86. If not given, it will do both.'
+  echo 'e.g. bask toolchain does both arm and x86, but toolchain:x86 only does x86.'
+  echo
+  echo -e 'bask everything\t\t\t\t Download and build everything from scratch.'
+  echo -e 'bask toolchain[:arch]\t\t\t Prepares a toolchain.'
+  echo -e 'bask boost:download\t\t\t Downloads Boost.'
+  echo -e 'bask boost:extract\t\t\t Extracts Boost.'
+  echo -e 'bask boost:bootstrap\t\t\t Bootstraps the Boost build system.'
+  echo -e 'bask boost:config\t\t\t Writes Boost toolchain configuration data.'
+  echo -e 'bask boost:build[:arch]\t\t\t Builds Boost.'
+  echo -e 'bask boost:setup\t\t\t boost:download+boost:extract+boost:bootstrap.'
+  echo -e 'bask boost:clean[:arch]\t\t\t Deletes the given Boost build.'
+  echo -e 'bask libmagic:autoreconf\t\t Sets up libmagic configure scripts.'
+  echo -e 'bask libmagic:configure[:arch]\t\t Configures libmagic.'
+  echo -e 'bask libmagic:build[:arch]\t\t Builds libmagic.'
+  echo -e 'bask libmagic\t\t\t\t libmagic:configure+libmagic:build.'
+  echo -e 'bask libmagic:clean[:arch]\t\t Deletes the given libmagic build.'
+  echo -e 'bask tools[:arch]\t\t\t Builds the zdata tools.'
+  echo -e 'bask tools:clean\t\t\t Deletes the given zdata tools build.'
+  echo -e 'bask app\t\t\t\t Builds the zdata client app in release mode.'
+  echo -e 'bask app --debug\t\t\t Same as above, but in debug mode.'
+  echo -e 'bask app:install:debug\t\t\t Installs the debug app apk via adb.'
+  echo -e 'bask app:install:release\t\t Installs the release app apk via adb.'
+  echo -e 'bask app:run\t\t\t\t Runs the app in debug via adb using flutter run.'
+  echo -e 'bask app:run --release\t\t\t Runs the app in release via adb using flutter run.'
+  echo -e 'bask app:clean\t\t\t\t Deletes the app build.'
+}
+
+
 task_default() {
-  echo "Run 'bask everything' for a full build, or bask -l to list individual targets."
+  bask_depends help
   false
 }
 
@@ -180,7 +210,7 @@ arch_task_tools() {
 
   ndk-build -C fs/jni APP_ABI=$ABI $args
   rm -rf fs/build/$ABI
-  cp -r fs/libs/$ABI fs/build/$ABI
+  cp -r fs/libs/$ABI fs/build/$arch
 }
 
 arch_task tools
