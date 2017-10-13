@@ -105,16 +105,12 @@ task_boost:bootstrap() {
 
 
 task_boost:config() {
-  rm boost-android/boost/toolchains.jam
+  rm -f boost-android/boost/toolchains.jam
 
   for arch in arm x86; do
     set_current_toolchain $arch
     cat >> boost-android/boost/toolchains.jam <<EOF
-  using clang : ${arch}droid : $TOOLCHAIN_CXX :
-    <cxxflags>-stdlib=libc++
-    <cxxflags>-I$TOOLCHAIN_ROOT/include/c++/v1
-    # Please, don't ask...
-    <cxxflags>-D_LIBCPP_ABI_VERSION=ndk1 ;
+  using clang : ${arch}droid : $TOOLCHAIN_CXX ;
 EOF
   done
 }
@@ -149,6 +145,7 @@ task_boost() {
 
 arch_task_boost:clean() {
   rm -rf boost-android/boost/$arch
+  rm -f boost-android/boost/toolchains.jam
 }
 
 arch_task boost:clean
