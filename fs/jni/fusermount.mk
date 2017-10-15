@@ -11,6 +11,7 @@ LOCAL_C_INCLUDES := \
 	external/fuse/lib
 # Android doesn't have lockf
 LOCAL_CFLAGS := \
+	-include sys/file.h \
 	-D_FILE_OFFSET_BITS=64 \
 	-DF_LOCK=LOCK_EX \
 	-DF_ULOCK=LOCK_UN \

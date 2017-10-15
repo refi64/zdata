@@ -9,6 +9,8 @@ NDK="`dirname "$NDK_BUILD"`"
 
 BOOST_URL="https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz"
 
+: ${FLUTTER:=flutter}
+
 
 arch_task() {
   local name="$1"
@@ -77,7 +79,7 @@ task_default() {
 arch_task_toolchain() {
   rm -rf toolchain/$arch
   bask_run "$NDK/build/tools/make_standalone_toolchain.py" \
-    --stl libc++ --api 23 --arch $arch --install-dir toolchain/$arch
+    --stl libc++ --api 21 --arch $arch --install-dir toolchain/$arch
 }
 
 arch_task toolchain
@@ -224,7 +226,7 @@ arch_task tools:clean
 
 task_app() {
   cd app
-  flutter build apk "$@"
+  $FLUTTER build apk "$@"
   cd ..
 }
 
@@ -241,7 +243,7 @@ task_app:install:release() {
 
 task_app:run() {
   cd app
-  flutter run "$@"
+  $FLUTTER run "$@"
   cd ..
 }
 
