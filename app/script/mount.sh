@@ -6,9 +6,8 @@ set -ex
 cd /data/data/com.refi64.zdata.app/app_flutter
 
 chmod 0700 fusecompress
-chmod 0700 getowner
 
-owner=`./getowner "/data/data/$1"`
+owner=`sh toolbox.sh owner "/data/data/$1"`
 pm clear "$1"
 new=""
 [ -d "$storage/$1" ] || new=1
