@@ -121,6 +121,7 @@ class _RootState extends State<Root> {
       break;
     case 'i386':
     case 'i686':
+    case 'x86_64':
       debugPrint('using bin-x86 for ${arch}');
       bindir = 'bin-x86';
       break;
