@@ -174,9 +174,10 @@ class _RootState extends State<Root> {
   }
 
   Future loadEnabled() async {
-    // XXX: laziness: ls -1 <dir> is easier than basename path manipulations...
-    var proc = await Process.run('ls', ['-1', _storagedir.path]);
-    var present = proc.stdout.split('\n');
+    var present = await _storagedir.list()
+                    .where((e) => e is Directory)
+                    .map((e) => path.basename(e.path))
+                    .toList();
     debugPrint('present: $present');
 
     var newEnabled = <bool>[];
