@@ -208,8 +208,9 @@ arch_task_tools() {
   fi
 
   ndk-build -C fs/jni APP_ABI=$ABI $args
-  rm -rf fs/build/$ABI
-  cp -r fs/libs/$ABI fs/build/$arch
+  rm -rf fs/build/$arch
+  mkdir fs/build/$arch
+  cp -r fs/libs/$ABI/* fs/build/$arch
 }
 
 arch_task tools
