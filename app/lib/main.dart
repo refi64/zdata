@@ -283,16 +283,12 @@ class GlobalUsageCache {
   var _lastKnownUsage = <String, AppUsage>{};
 
   Future getUsageStream({String app, File toolbox, OnUsageUpdate onUsageUpdate}) async {
-    _lastKnownUsage.putIfAbsent(app, () => new AppUsage());
-
     if (!_lastKnownUsage.containsKey(app)) {
       _lastKnownUsage[app] = new AppUsage();
 
-      var storagedir = globalFolderInformation.storagedir;
-
       var proc = await Process.start('/system/bin/sh',
-                                     ['-c', 'su -c "sh ${toolbox.path} usage '
-                                                      '${storagedir.path}/$app"']);
+                                     ['-c', 'su -c "sh ${toolbox.path} usage'
+                                                      ' /data/data/$app"']);
 
       proc.stderr
         .transform(UTF8.decoder)
@@ -517,7 +513,7 @@ class _ActionPageState extends State<ActionPage> {
             case ConnectionState.none:
             case ConnectionState.waiting:
               return new Padding(
-                padding: new EdgeInsets.only(top: 10.0),,
+                padding: new EdgeInsets.only(top: 10.0),
                 child: new Column(
                   children: [
                     new CircularProgressIndicator(value: null),
