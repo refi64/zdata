@@ -400,7 +400,6 @@ class _AppInfoPageState extends State<AppInfoPage> {
 
   void onUsageUpdate(AppUsage usage) {
     if (_usage.apparent != usage.apparent || _usage.actual != usage.actual) {
-      print('apparent: ${usage.apparent}, actual: ${usage.actual}');
       setState(() {
         _usage = usage;
       });
