@@ -19,10 +19,11 @@ flutter:
   assets:
     - bin-arm/fusecompress
     - bin-arm/fusermount
-    - bin-arm/getowner
+    - bin-arm/toolbox
     - bin-x86/fusecompress
     - bin-x86/fusermount
-    - bin-x86/getowner
+    - bin-x86/toolbox
     - script/mount.sh
     - script/mountall.sh
     - script/umount.sh
+    - script/toolbox.sh

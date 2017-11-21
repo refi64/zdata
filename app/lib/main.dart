@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:android_app_info/android_app_info.dart';
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:path/path.dart' as path;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 
@@ -38,31 +39,39 @@ class Zdata extends StatelessWidget {
   }
 }
 
-class Root extends StatefulWidget {
-  @override
-  _RootState createState() => new _RootState();
-}
 
-
-enum Tool { fusecompress, fusermount, getowner, mountsh, mountallsh, umountsh }
+enum Tool { fusecompress, fusermount, toolbox, mountsh, mountallsh, umountsh, toolboxsh }
 
 
 const Map<Tool, String> TOOL_NAMES = const {
   Tool.fusecompress: 'fusecompress',
   Tool.fusermount: 'fusermount',
-  Tool.getowner: 'getowner',
+  Tool.toolbox: 'toolbox',
   Tool.mountsh: 'mount.sh',
   Tool.mountallsh: 'mountall.sh',
   Tool.umountsh: 'umount.sh',
+  Tool.toolboxsh: 'toolbox.sh',
 };
 
 
 enum Action { enable, disable }
 
 
+class GlobalFolderInformation {
+  Directory datadir, storagedir;
+}
+
+final globalFolderInformation = new GlobalFolderInformation();
+
+
+class Root extends StatefulWidget {
+  @override
+  _RootState createState() => new _RootState();
+}
+
+
 class _RootState extends State<Root> {
   List<AndroidAppInfo> _apps;
-  Directory _storagedir;
   Map<Tool, File> _tools;
   List<bool> _enabled;
   bool _sufail = false;
@@ -78,7 +87,6 @@ class _RootState extends State<Root> {
     var proc, sufail = false;
 
     try {
-      // proc = await Process.run('su', ['-c', 'true']);
       proc = await Process.run('/system/bin/sh', ['-c', 'su', '-c', 'true']);
     } catch (e) {
       debugPrint("error: $e");
@@ -134,6 +142,9 @@ class _RootState extends State<Root> {
     var datadir = await getApplicationDocumentsDirectory();
     var storagedir = new Directory(path.join(datadir.path, 'storage'));
 
+    globalFolderInformation.datadir = datadir;
+    globalFolderInformation.storagedir = storagedir;
+
     if (!await storagedir.exists())
       storagedir.create();
 
@@ -155,7 +166,6 @@ class _RootState extends State<Root> {
     }
 
     setState(() {
-      _storagedir = storagedir;
       _tools = tools;
     });
   }
@@ -174,7 +184,7 @@ class _RootState extends State<Root> {
   }
 
   Future loadEnabled() async {
-    var present = await _storagedir.list()
+    var present = await globalFolderInformation.storagedir.list()
                     .where((e) => e is Directory)
                     .map((e) => path.basename(e.path))
                     .toList();
@@ -218,12 +228,15 @@ class _RootState extends State<Root> {
     } else {
       var message = _tools == null ? 'Loading tools...' : 'Loading application list...';
       body = new Center(
-        child: new Column(
-          children: <Widget>[
-            new CircularProgressIndicator(value: null),
-            new Text(message),
-          ],
-        ),
+        child: new Padding(
+          padding: new EdgeInsets.only(top: 10.0),
+          child: new Column(
+            children: <Widget>[
+              new CircularProgressIndicator(value: null),
+              new Text(message),
+            ],
+          )
+        )
       );
     }
 
@@ -259,12 +272,75 @@ class _RootState extends State<Root> {
 }
 
 
-class AppInfoPage extends StatelessWidget {
+class AppUsage {
+  int actual, apparent;
+  AppUsage({this.actual: 1, this.apparent: 1});
+}
+
+
+typedef void OnUsageUpdate(AppUsage usage);
+
+class GlobalUsageCache {
+  var _lastKnownUsage = <String, AppUsage>{};
+
+  Future getUsageStream({String app, File toolbox, OnUsageUpdate onUsageUpdate}) async {
+    if (!_lastKnownUsage.containsKey(app)) {
+      _lastKnownUsage[app] = new AppUsage();
+
+      var proc = await Process.start('/system/bin/sh',
+                                     ['-c', 'su -c "sh ${toolbox.path} usage'
+                                                      ' /data/data/$app"']);
+
+      proc.stderr
+        .transform(UTF8.decoder)
+        .transform(const LineSplitter())
+        .listen((line) {
+          debugPrint('stderr from calculating usage of $app: $line');
+        });
+
+      proc.stdout
+        .transform(UTF8.decoder)
+        .transform(const LineSplitter())
+        .listen((String line) {
+          var split = line.split(' ').map(int.parse).toList();
+          var apparent = split[0];
+          var actual = split[1];
+
+          var usage = new AppUsage(apparent: apparent, actual: actual);
+          _lastKnownUsage[app] = usage;
+
+          onUsageUpdate(usage);
+        });
+    }
+
+    onUsageUpdate(_lastKnownUsage[app]);
+
+    return new Future.value();
+  }
+}
+
+
+final globalUsageCache = new GlobalUsageCache();
+
+
+class AppInfoPage extends StatefulWidget {
   final AndroidAppInfo app;
   final bool enabled;
   final Map<Tool, File> tools;
 
   AppInfoPage({Key key, this.app, this.enabled, this.tools}): super(key: key);
+
+  @override
+  _AppInfoPageState createState() => new _AppInfoPageState();
+}
+
+
+class _AppInfoPageState extends State<AppInfoPage> {
+  var _usage = new AppUsage();
+
+  AndroidAppInfo get app => widget.app;
+  bool get enabled => widget.enabled;
+  Map<Tool, File> get tools => widget.tools;
 
   Widget runAction(Action action) {
     Tool tool;
@@ -322,8 +398,41 @@ class AppInfoPage extends StatelessWidget {
     );
   }
 
+  void onUsageUpdate(AppUsage usage) {
+    if (_usage.apparent != usage.apparent || _usage.actual != usage.actual) {
+      print('apparent: ${usage.apparent}, actual: ${usage.actual}');
+      setState(() {
+        _usage = usage;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    var usageWidget;
+
+    if (enabled) {
+      globalUsageCache.getUsageStream(app: app.packageName,
+                                      toolbox: tools[Tool.toolboxsh],
+                                      onUsageUpdate: onUsageUpdate);
+
+      var apparentMb = (_usage.apparent / 1024).toStringAsFixed(4);
+      var actualMb = (_usage.actual / 1024).toStringAsFixed(4);
+      var savings = ((_usage.apparent - _usage.actual) / _usage.apparent * 100)
+                      .toStringAsFixed(4);
+
+      usageWidget = new Padding(
+        padding: new EdgeInsets.only(bottom: 10.0),
+        child: new Column(
+          children: [
+            new Text('Uncompressed: $apparentMb MB'),
+            new Text('Compressed: $actualMb MB'),
+            new Text('Space savings: $savings%'),
+          ]
+        )
+      );
+    }
+
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('zdata: ${shownAppName(app)}'),
@@ -332,29 +441,41 @@ class AppInfoPage extends StatelessWidget {
         children: [
           new Row(
             children: [
-              new Padding(
-                padding: new EdgeInsets.only(left: 10.0, right: 5.0),
-                child: appIcon(app),
-              ),
-              new Expanded(
+              new Flexible(
                 child: new Padding(
-                  padding: new EdgeInsets.only(right: 10.0),
-                  child: new Column(
-                    children: [
-                      new Text(
-                        shownAppName(app),
-                        textScaleFactor: 2.0,
-                      ),
-                      new Text(
-                        app.packageName,
-                        textAlign: TextAlign.center,
-                      ),
-                    ]
+                  padding: new EdgeInsets.only(
+                    left: 10.0,
+                    top: 10.0,
+                    bottom: 10.0,
+                    right: 10.0
+                  ),
+                  child: appIcon(app),
+                )
+              ),
+              new Flexible(flex: 3,
+                child: new Padding(
+                  padding: new EdgeInsets.only(left: 10.0, right: 10.0),
+                  child: new Center(
+                    child: new Column(
+                      children: [
+                        new Text(
+                          shownAppName(app),
+                          textAlign: TextAlign.center,
+                          textScaleFactor: 2.0,
+                        ),
+                        new Text(
+                          app.packageName,
+                          textAlign: TextAlign.center,
+                        ),
+                      ]
+                    )
                   ),
                 )
               ),
+              new Flexible(child: new Container()),
             ],
           ),
+          new Container(child: usageWidget),
           new RaisedButton(
             child: new Text(enabled ? 'DISABLE' : 'ENABLE'),
             onPressed: () => onTap(context),
@@ -392,11 +513,14 @@ class _ActionPageState extends State<ActionPage> {
             switch (snapshot.connectionState) {
             case ConnectionState.none:
             case ConnectionState.waiting:
-              return new Column(
-                children: [
-                  new CircularProgressIndicator(value: null),
-                  new Text('Please wait...'),
-                ],
+              return new Padding(
+                padding: new EdgeInsets.only(top: 10.0),
+                child: new Column(
+                  children: [
+                    new CircularProgressIndicator(value: null),
+                    new Text('Please wait...'),
+                  ],
+                )
               );
             default:
               var message;

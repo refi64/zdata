@@ -11,6 +11,6 @@ endif
 include $(CLEAR_VARS)
 
 include $(LOCAL_PATH)/external/fuse/lib/Android.mk \
-		$(LOCAL_PATH)/getowner/Android.mk \
+		$(LOCAL_PATH)/toolbox/Android.mk \
         $(LOCAL_PATH)/fusermount.mk \
         $(LOCAL_PATH)/fusecompress.mk
