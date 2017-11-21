@@ -367,7 +367,8 @@ class _AppInfoPageState extends State<AppInfoPage> {
       message = 'Disable zdata for this app? (The device will be restarted afterwards.)';
       action = Action.disable;
     } else {
-      message = 'Enable zdata for this app?';
+      message = 'Enable zdata for this app? (The zdata app will automatically be'
+                                           ' restarted afterwards)';
       action = Action.enable;
     }
 
