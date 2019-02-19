@@ -1,0 +1,42 @@
+install-root: external
+
+toolchain:
+  api: 21
+  platforms: [arm]
+  stl: libc++
+
+modules:
+  boost:
+    dependencies: []
+    sources:
+      - url: https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.gz
+        strip-parents: 1
+        after: |
+          ./bootstrap.sh --with-toolset=clang
+    build:
+      type: simple
+      steps:
+        - name: write-toolchain
+          run: |
+            cat >> toolchain.jam <<EOF
+              using clang : android : $CXX ;
+            EOF
+        - name: build
+          run: |
+            builddir="$PWD"
+            cd "$SOURCES"
+            ./b2 install -j2 --prefix="$PREFIX" --user-config="$builddir/toolchain.jam" \
+              --stagedir="$builddir/stage" --build-dir="$builddir/build" \
+              --with-filesystem --with-iostreams --with-program_options \
+              --with-serialization --with-system \
+              link=static runtime-link=static toolset=clang-android \
+              target-os=linux variant=release
+  libmagic:
+    dependencies: []
+    sources:
+      - url: ftp://ftp.astron.com/pub/file/file-5.34.tar.gz
+        strip-parents: 1
+    build:
+      type: autotools
+      configure-options: --enable-zlib --enable-static --disable-shared
+      make-options: -j2

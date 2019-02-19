@@ -4,9 +4,6 @@
 [submodule "jni/fusecompress/fusecompress"]
 	path = fs/jni/fusecompress
 	url = https://github.com/tex/fusecompress.git
-[submodule "libmagic/file"]
-	path = libmagic-android/file
-	url = https://github.com/file/file.git
 [submodule "liblzma-android/xz"]
 	path = liblzma-android/xz
 	url = https://git.tukaani.org/xz.git

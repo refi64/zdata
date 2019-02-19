@@ -1,12 +1,6 @@
-.tinymk.db
-__pycache__/
 fs/build/
 fs/obj/
 fs/libs/
-boost-android/boost.tgz
-boost-android/boost/
-libmagic-android/arm/
-libmagic-android/x86/
 toolchain/arm/
 toolchain/x86/
 app/.packages
@@ -15,3 +9,5 @@ app/build/
 app/packages
 app/pubspec.lock
 app/.flutter-plugins
+.kikai/
+external/
