@@ -1,13 +1,4 @@
-#fs/build/
 fs/obj/
 fs/libs/
-#toolchain/arm/
-#toolchain/x86/
-#app/.packages
-#app/.pub/
-#pp/build/
-#app/packages
-#app/pubspec.lock
-#app/.flutter-plugins
 .kikai/
 external/
